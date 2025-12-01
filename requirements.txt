@@ -1,12 +1,6 @@
-torch==2.0.1
-torchvision==0.15.2
-facenet-pytorch
-numpy
-Pillow
 streamlit
-scikit-learn
-matplotlib
-seaborn
-timm
-mediapipe
-opencv-python-headless
+numpy
+pillow
+facenet-pytorch
+torch==1.13.1
+torchvision==0.14.1
