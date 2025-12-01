@@ -35,25 +35,28 @@ classifier.load_state_dict(
 
 classifier.eval()
 
-def predict(image: Image.Image):
-    # Detect face
-    face = mtcnn(image)
+def predict(image):
+    if image is None:
+        return None, None
+    
+    img = image.convert("RGB")
+    img = np.asarray(img)
+    if max(img.shape[0], img.shape[1]) > 1600:
+        img = np.array(Image.fromarray(img).resize((800, 800)))
+    face = mtcnn(img)
+
     if face is None:
-        return "No Face Detected", 0.0
+        return "Wajah tidak terdeteksi", 0.0
+    
+    emb = facenet(face.unsqueeze(0).to(device))
+    logits = classifier(emb)
+    probs = torch.softmax(logits, dim=1)
 
-    face = face.unsqueeze(0).to(device)
+    pred_idx = torch.argmax(probs).item()
+    confidence = probs[0][pred_idx].item()
+    name = label_map.get(pred_idx, "Unknown")
 
-    # Generate embedding
-    emb = facenet(face)
-
-    # Classify
-    with torch.no_grad():
-        logits = classifier(emb)
-        probs = torch.softmax(logits, dim=1)
-        conf, pred = torch.max(probs, dim=1)
-
-    name = label_map[pred.item()]
-    return name, conf.item()
+    return name, confidence
 
 st.set_page_config(page_title="Face Recognition | FaceNet", layout="wide")
 
@@ -77,4 +80,4 @@ if uploaded_file:
             st.error(" No face detected!")
         else:
             st.success(f"**Predicted: {name}**")
-            st.info(f"Confidence: **{conf:.4f}**")
+            # st.info(f"Confidence: **{conf:.4f}**")
