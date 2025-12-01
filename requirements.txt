@@ -8,3 +8,5 @@ scikit-learn
 matplotlib
 seaborn
 timm
+mediapipe
+opencv-python-headless
