@@ -5,6 +5,7 @@ from facenet_pytorch import MTCNN, InceptionResnetV1
 from PIL import Image
 import numpy as np
 import json
+import cv2
 
 with open("models/label_map.json", "r") as f:
     label_map = json.load(f)
