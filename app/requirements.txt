@@ -1,8 +1,10 @@
-streamlit
-torch==1.13.1
-torchvision==0.14.1
+torch==2.0.1
+torchvision==0.15.2
 facenet-pytorch
 numpy
 Pillow
-opencv-python
+streamlit
 scikit-learn
+matplotlib
+seaborn
+timm
