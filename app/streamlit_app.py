@@ -75,5 +75,6 @@ if uploaded_file:
             st.error("⚠️ Face detection error occurred.")
         else:
             st.success(f"🎯 Predicted: **{name}**")
-            # st.info(f"Confidence: **{conf:.4f}**")
+            st.info(f"Confidence: **{conf:.4f}**")
+
 
