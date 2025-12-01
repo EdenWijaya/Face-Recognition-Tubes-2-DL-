@@ -37,26 +37,43 @@ classifier.eval()
 
 def predict(image):
     if image is None:
-        return None, None
-    
+        return "No image", 0.0
+
     img = image.convert("RGB")
     img = np.asarray(img)
-    if max(img.shape[0], img.shape[1]) > 1600:
-        img = np.array(Image.fromarray(img).resize((800, 800)))
-    face = mtcnn(img)
 
-    if face is None:
-        return "Wajah tidak terdeteksi", 0.0
-    
-    emb = facenet(face.unsqueeze(0).to(device))
+    # Resize jika terlalu besar
+    if max(img.shape[:2]) > 1600:
+        img = np.array(Image.fromarray(img).resize((800, 800)))
+
+    boxes, probs = mtcnn.detect(img)
+    if boxes is None:
+        return "Face not detected", 0.0
+
+    # Ambil wajah pertama
+    box = boxes[0].astype(int)
+
+    x1, y1, x2, y2 = box
+    face_crop = img[y1:y2, x1:x2]
+
+    if face_crop.size == 0:
+        return "Invalid face crop", 0.0
+
+    face_crop = Image.fromarray(face_crop)
+    face_tensor = mtcnn.prewhiten(np.asarray(face_crop))
+    face_tensor = torch.tensor(face_tensor).permute(2,0,1).unsqueeze(0).float().to(device)
+
+    with torch.no_grad():
+        emb = facenet(face_tensor)
     logits = classifier(emb)
     probs = torch.softmax(logits, dim=1)
 
     pred_idx = torch.argmax(probs).item()
-    confidence = probs[0][pred_idx].item()
+    conf = probs[0][pred_idx].item()
+
     name = label_map.get(pred_idx, "Unknown")
 
-    return name, confidence
+    return name, conf
 
 st.set_page_config(page_title="Face Recognition | FaceNet", layout="wide")
 
