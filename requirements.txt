@@ -3,3 +3,4 @@ torchvision
 facenet-pytorch
 numpy
 Pillow
+streamlit
