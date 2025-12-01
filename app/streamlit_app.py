@@ -40,31 +40,42 @@ def predict(image):
         return "No image", 0.0
 
     img = image.convert("RGB")
-    img = np.asarray(img)
+    img = np.asarray(img).astype(np.uint8)
 
-    # Resize jika terlalu besar
-    if max(img.shape[:2]) > 1600:
-        img = np.array(Image.fromarray(img).resize((800, 800)))
-
+    if len(img.shape) != 3 or img.shape[2] != 3:
+        return "Invalid image format", 0.0
+    
     boxes, probs = mtcnn.detect(img)
-    if boxes is None:
+
+    if boxes is None or len(boxes) == 0:
         return "Face not detected", 0.0
 
     # Ambil wajah pertama
-    box = boxes[0].astype(int)
+    x1, y1, x2, y2 = boxes[0].astype(int)
 
-    x1, y1, x2, y2 = box
+    # Proteksi index out of bounds
+    h, w = img.shape[:2]
+    x1 = max(0, min(x1, w - 1))
+    x2 = max(0, min(x2, w - 1))
+    y1 = max(0, min(y1, h - 1))
+    y2 = max(0, min(y2, h - 1))
+
     face_crop = img[y1:y2, x1:x2]
 
     if face_crop.size == 0:
         return "Invalid face crop", 0.0
 
+    # Convert crop menjadi tensor untuk FaceNet
     face_crop = Image.fromarray(face_crop)
-    face_tensor = mtcnn.prewhiten(np.asarray(face_crop))
-    face_tensor = torch.tensor(face_tensor).permute(2,0,1).unsqueeze(0).float().to(device)
+    face_crop = face_crop.resize((160,160))
+    face_crop = np.asarray(face_crop).astype(np.float32)
+
+    face_crop = (face_crop - 127.5) / 128.0
+    face_tensor = torch.tensor(face_crop).permute(2,0,1).unsqueeze(0).to(device)
 
     with torch.no_grad():
         emb = facenet(face_tensor)
+        
     logits = classifier(emb)
     probs = torch.softmax(logits, dim=1)
 
@@ -74,6 +85,7 @@ def predict(image):
     name = label_map.get(pred_idx, "Unknown")
 
     return name, conf
+
 
 st.set_page_config(page_title="Face Recognition | FaceNet", layout="wide")
 
