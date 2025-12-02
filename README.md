@@ -73,10 +73,10 @@ Hasil Eksperimen
 
 ### 👨‍💻 Authors
 
-Kelompok 5 
+Kelompok 6
 Deep Learning Project
 Face Recognition Attendance System
 
-- Eden Wijaya
+- 122140187 - Eden Wijaya
 - 12214020 - Intan Permata Sari
-- Bayu Ega Ferdana
+- 122140129 - Bayu Ega Ferdana
